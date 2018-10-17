@@ -2959,6 +2959,36 @@
         <description>Spektrum DSMX</description>
       </entry>
     </enum>
+        <enum name="UTM_FLIGHT_STATE">
+      <description>Airborne status of UAS.</description>
+      <entry value="1" name="UTM_FLIGHT_STATE_UNKNOWN">
+        <description>The flight state can't be determined.</description>
+      </entry>
+      <entry value="2" name="UTM_FLIGHT_STATE_GROUND">
+        <description>UAS on ground.</description>
+      </entry>
+      <entry value="3" name="UTM_FLIGHT_STATE_AIRBORNE">
+        <description>UAS airborne.</description>
+      </entry>
+    </enum>
+    <enum name="UTM_DATA_AVAIL_FLAGS">
+      <description>Flags for the global position report.</description>
+      <entry value="1" name="UTM_DATA_AVAIL_FLAGS_TIME_VALID">
+        <description>The field time contains valid data.</description>
+      </entry>
+      <entry value="2" name="UTM_DATA_AVAIL_FLAGS_UAS_ID_AVAILABLE">
+        <description>The field uasId contains valid data.</description>
+      </entry>
+      <entry value="4" name="UTM_DATA_AVAIL_FLAGS_POSITION_AVAILABLE">
+        <description>The fields lat, lon, alt and relativeAlt contain valid data.</description>
+      </entry>
+      <entry value="8" name="UTM_DATA_AVAIL_FLAGS_ALTITUDE_AVAILABLE">
+        <description>The fields lat, lon, alt and relativeAlt contain valid data.</description>
+      </entry>
+      <entry value="16" name="UTM_DATA_AVAIL_FLAGS_NEXT_WAYPOINT_AVAILABLE">
+        <description>The fields next_at, next_lon and next_alt contain valid data.</description>
+      </entry>
+    </enum>
   </enums>
   <messages>
     <message id="0" name="HEARTBEAT">
@@ -4774,5 +4804,49 @@
       <field type="float[5]" name="delta" units="s">Bezier time horizon, set to NaN if velocity/acceleration should not be incorporated</field>
       <field type="float[5]" name="pos_yaw" units="rad">Yaw, set to NaN for unchanged</field>
     </message>
+    <message id="334" name="UTM_GLOBAL_POSITION">
+      <wip/>
+      <!-- This message is work-in-progress it can therefore change, and should NOT be used in stable production environments -->
+      <description>The global position resulting from GPS and sensor fusion.</description>
+      <field type="uint64_t" name="time" units="us">Time of applicability of position (microseconds since UNIX epoch).</field>
+      <field type="uint8_t[18]" name="uas_id">Unique UAS ID.</field>
+      <field type="int32_t" name="lat" units="degE7">Latitude (WGS84), in degrees * 1E7.</field>
+      <field type="int32_t" name="lon" units="degE7">Longitude (WGS84), in degrees * 1E7.</field>
+      <field type="int32_t" name="alt" units="mm">Altitude (WGS84), in meters * 1000.</field>
+      <field type="int32_t" name="relative_alt" units="mm">Altitude above ground in meters * 1000.</field>
+      <field type="int16_t" name="vx" units="cm/s">Ground X Speed (Latitude, positive north), expressed as m/s * 100.</field>
+      <field type="int16_t" name="vy" units="cm/s">Ground Y Speed (Longitude, positive east), expressed as m/s * 100.</field>
+      <field type="int16_t" name="vz" units="cm/s">Ground Z Speed (Altitude, positive down), expressed as m/s * 100.</field>
+      <field type="uint32_t" name="h_acc" units="mm">Horizontal Position uncertainty in meters * 1000. (standard deviation)</field>
+      <field type="uint32_t" name="v_acc" units="mm">Altitude uncertainty in meters * 1000. (standard deviation)</field>
+      <field type="uint32_t" name="vel_acc" units="mm/s">Speed uncertainty in m/s * 1000. (standard deviation)</field>
+      <field type="int32_t" name="next_lat" units="degE7">Next waypoint, Latitude (WGS84), in degrees * 1E7.</field>
+      <field type="int32_t" name="next_lon" units="degE7">Next waypoint, Longitude (WGS84), in degrees * 1E7.</field>
+      <field type="int32_t" name="next_alt" units="mm">Next waypoint, Altitude (WGS84), in meters * 1000.</field>
+      <field type="uint16_t" name="update_rate">Seconds * 1E2 until next update. Set to 0 if unknown or in data driven mode.</field>
+      <field type="uint8_t" name="flight_state">The flight state defined in enum \verb|UTM_FLIGHT_STATE|.</field>
+      <field type="uint8_t" name="flags">Bitwise OR combination of the enums \verb|UTM_DATA_AVAIL_FLAGS|.</field>
+    </message>
+    <message id="335" name="NFC">
+      <wip/>
+      <description>Mavlink Message to transfer Data over NFC</description>
+      <field type="uint8_t[8]" name="nfc_id" >NFC ID from Tag.</field>
+      <field type="uint8_t" name="data_id" >Data ID</field>
+      <field type="uint8_t" name="data_len" >Data LEN</field>
+      <field type="uint8_t" name="data_nr" >Data NR</field>
+      <field type="uint8_t[200]" name="data" >Data on NFC Tag.</field>
+    </message>
+    <message id="336" name="HEARTBEATSIGN">
+      <wip/>
+      <description>The heartbeat message shows that a system is present and responding. The type of the MAV and Autopilot hardware allow the receiving system to treat further messages from this system appropriate (e.g. by laying out the user interface based on the autopilot).</description>
+      <field type="uint8_t" name="type" enum="MAV_TYPE">Type of the MAV (quadrotor, helicopter, etc., up to 15 types, defined in MAV_TYPE ENUM)</field>
+      <field type="uint8_t" name="autopilot" enum="MAV_AUTOPILOT">Autopilot type / class. defined in MAV_AUTOPILOT ENUM</field>
+      <field type="uint8_t" name="base_mode" enum="MAV_MODE_FLAG" display="bitmask">System mode bitfield, as defined by MAV_MODE_FLAG enum</field>
+      <field type="uint32_t" name="custom_mode">A bitfield for use for autopilot-specific flags</field>
+      <field type="uint8_t" name="system_status" enum="MAV_STATE">System status flag, as defined by MAV_STATE enum</field>
+      <field type="uint8_t_mavlink_version" name="mavlink_version">MAVLink version, not writable by user, gets added by protocol because of magic data type: uint8_t_mavlink_version</field>
+      <field type="uint16_t" name="signlen">lenght of the signature</field>
+      <field type="uint8_t[64]" name="sign" >signature of the message</field>
+    </message> 
   </messages>
 </mavlink>
